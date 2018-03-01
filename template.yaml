@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: A simple Hello World Serverless project
+Resources:
+  StartStopInstances:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs6.10
+      Handler: index.handler
+      Timeout: 20
+      CodeUri: .
+      # Tracing: Active
+      Environment:
+        Variables:
+          START_EXPRESSION_TAG: Scheduled_Start
+          STOP_EXPRESSION_TAG: Scheduled_Stop
+          GRACE_TIME_MINUTES: 15
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:DescribeRegions
+                - ec2:DescribeInstances
+                - ec2:StopInstances
+                - ec2:StartInstances
+              Resource: '*'
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
