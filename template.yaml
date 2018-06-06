@@ -16,6 +16,7 @@ Resources:
           START_EXPRESSION_TAG: Scheduled_Start
           STOP_EXPRESSION_TAG: Scheduled_Stop
           GRACE_TIME_MINUTES: 15
+          TIMEZONE: Europe/Berlin
       Policies:
         - Version: '2012-10-17'
           Statement:
