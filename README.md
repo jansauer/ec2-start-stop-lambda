@@ -63,6 +63,10 @@ $ sam deploy --template-file ./packaged.yaml --stack-name ec2startstop --capabil
 If want to stick to the basics you can archive the same with the commands 
 `aws cloudformation package` and `aws cloudformation deploy`.
 
+## Timezone
+
+You are able to set the TIMEZONE via the aws lambda Enviornment. The Timezone is implemented with the help of [Moment Timezon](https://momentjs.com/timezone/) 
+
 ## Contributing
 
 Pull requests are always welcome. I'm grateful for any help or inspiration.
