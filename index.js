@@ -1,7 +1,5 @@
 'use strict';
 
-// const AWSXRay = require('aws-xray-sdk');
-// const AWS = AWSXRay.captureAWS(require('aws-sdk'));
 const AWS = require('aws-sdk');
 const ec2 = new AWS.EC2();
 const parser = require('cron-parser');
@@ -26,7 +24,7 @@ exports.handler = (event, context, callback) => {
     }, function (error, data) {
         if (error) callback(error);
 
-        console.log('setting timezone ', timezone);
+        console.log(`Setting timezone ${timezone}`);
         moment.tz.setDefault(timezone);
 
         data.Reservations.forEach(function (reservation) {
@@ -36,23 +34,21 @@ exports.handler = (event, context, callback) => {
                 let startexpression = instance.Tags.find(function (element) {
                     return element.Key == startExpressionTag;
                 });
-                if (startexpression && instance.State.Name == 'stopped') {
+                if (startexpression && instance.State.Name === 'stopped') {
                     try {
-                        console.log('Found start expression \'%s\' on stopped instance \'%s\'', startexpression.Value, instance.InstanceId);
+                        console.log(`Found start expression ${startexpression.Value} on stopped instance ${instance.InstanceId}`);
 
                         if (isCurrentTimeAffectedByCron(startexpression)) {
-                            console.log('Instance \'%s\' should be started as of \'%s\'', instance.InstanceId);
+                            console.log(`Instance ${instance.InstanceId} should be started`);
                             ec2.startInstances({
                                 InstanceIds: [instance.InstanceId]
                             }, function (error, data) {
                                 if (error) callback(error);
-                                console.log('Instance \'%s\' is now \'%s\'',
-                                    data.StartingInstances[0].InstanceId, data.StartingInstances[0].CurrentState.Name);
+                                console.log(`Instance ${data.StartingInstances[0].InstanceId} is now ${data.StartingInstances[0].CurrentState.Name}`);
                             });
                         }
                     } catch (error) {
-                        console.log('Unable to parse start expression \'%s\' on stopped instance \'%s\'',
-                            startexpression.Value, instance.InstanceId);
+                        console.log(`Unable to parse start expression ${startexpression.Value} on stopped instance ${instance.InstanceId}`);
                     }
                 }
 
@@ -60,26 +56,23 @@ exports.handler = (event, context, callback) => {
                 let stopexpression = instance.Tags.find(function (element) {
                     return element.Key == stopExpressionTag;
                 });
-                if (stopexpression && instance.State.Name == 'running') {
+                if (stopexpression && instance.State.Name === 'running') {
                     try {
-                        console.log('Found stop expression \'%s\' on running instance \'%s\'', stopexpression.Value, instance.InstanceId);
+                        console.log(`Found stop expression ${stopexpression.Value} on running instance ${instance.InstanceId}`);
 
                         if (isCurrentTimeAffectedByCron(stopexpression)) {
-                            console.log('Instance \'%s\' should be stopped as of \'%s\'', instance.InstanceId);
+                            console.log(`Instance ${instance.InstanceId} should be stopped`);
                             ec2.stopInstances({
                                 InstanceIds: [instance.InstanceId]
                             }, function (error, data) {
                                 if (error) callback(error);
-                                console.log('Instance \'%s\' is now \'%s\'',
-                                    data.StoppingInstances[0].InstanceId, data.StoppingInstances[0].CurrentState.Name);
+                                console.log(`Instance ${data.StoppingInstances[0].InstanceId} is now ${data.StoppingInstances[0].CurrentState.Name}`);
                             });
                         }
                     } catch (error) {
-                        console.log('Unable to parse stop expression \'%s\' on running instance \'%s\'',
-                            stopexpression.Value, instance.InstanceId);
+                        console.log(`Unable to parse stop expression ${stopexpression.Value} on running instance ${instance.InstanceId}`);
                     }
                 }
-
             });
         });
     });
@@ -92,6 +85,6 @@ function isCurrentTimeAffectedByCron(expression) {
     let prev = moment(previousCronFire.toDate());
     let prevWithGrace = moment(previousCronFire.toDate()).add(graceTime, 'm');
 
-    console.log('Is ', moment(), ' between ', prev, ' and ', prevWithGrace, ' = ', moment().isBetween(prev, prevWithGrace));
+    console.log(`Is ${moment()} between ${prev} and ${prevWithGrace} = ${moment().isBetween(prev, prevWithGrace)}`);
     return moment().isBetween(prev, prevWithGrace);
 }
